@@ -3,9 +3,9 @@
 export ANTHROPIC_BASE_URL=https://api.cborg.lbl.gov
 export ANTHROPIC_AUTH_TOKEN=$CBORG_API_KEY
 
-export ANTHROPIC_DEFAULT_HAIKU_MODEL=anthropic/claude-haiku-4-5
-export ANTHROPIC_DEFAULT_SONNET_MODEL=anthropic/claude-sonnet
-export ANTHROPIC_DEFAULT_OPUS_MODEL=anthropic/claude-opus-4-8
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=google/claude-haiku-4-5
+export ANTHROPIC_DEFAULT_SONNET_MODEL=google/claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_OPUS_MODEL=google/claude-opus-4-8
 
 export ANTHROPIC_MODEL=$ANTHROPIC_DEFAULT_SONNET_MODEL
 export CLAUDE_CODE_SUBAGENT_MODEL=$ANTHROPIC_DEFAULT_HAIKU_MODEL
