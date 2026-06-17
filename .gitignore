@@ -1,0 +1,2 @@
+# Persistent Claude Code home (holds credentials, sessions, config) — never commit
+.claude_home/
