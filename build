@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -u
+set -e
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# VERSION=$(git describe --tags --always --dirty --long)
+
+# docker build \
+#        -t claude-workspace:"$VERSION" \
+#        -t claude-workspace:latest \
+#        $SCRIPT_DIR
+
+docker build \
+       -t claude-workspace:latest \
+       $SCRIPT_DIR

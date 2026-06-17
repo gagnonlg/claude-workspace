@@ -1,0 +1,31 @@
+#!/bin/bash
+set -u
+set -e
+
+# Create a dedicated, persistent home directory for the sandbox agent
+HOST_HOME="$(pwd)/.claude_home"
+mkdir -p "$HOST_HOME"
+
+# 1. Seed the global state file into the new home directory to skip onboarding
+if [ ! -f "$HOST_HOME/.claude.json" ]; then
+    echo "Initializing new Claude configuration state..."
+    echo '{"hasCompletedOnboarding": true}' > "$HOST_HOME/.claude.json"
+fi
+
+CONTAINER=claude-workspace
+
+# 2. Boot the sandbox
+# We replaced the /root tmpfs and single-file mount with a directory mount
+exec docker run -it --rm \
+  --read-only \
+  --tmpfs /tmp:exec,mode=1777 \
+  -v "$HOST_HOME:/root" \
+  -v "$(pwd):/workspace" \
+  -e CBORG_API_KEY=$CBORG_API_KEY \
+  -e CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 \
+  -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
+  -e DISABLE_AUTOUPDATER=1 \
+  -e DISABLE_TELEMETRY=1 \
+  -e DISABLE_UPDATES=1 \
+  $CONTAINER \
+  ${@-claude}
