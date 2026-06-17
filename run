@@ -21,7 +21,7 @@ exec docker run -it --rm \
   --tmpfs /tmp:exec,mode=1777 \
   -v "$HOST_HOME:/root" \
   -v "$(pwd):/workspace" \
-  -e CBORG_API_KEY=$CBORG_API_KEY \
+  -e CBORG_API_KEY="${CBORG_API_KEY:-}" \
   -e CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 \
   -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
   -e DISABLE_AUTOUPDATER=1 \
