@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm \
     build-essential \
-    emacs \
+    emacs-nox \
     && pip install --no-cache-dir --upgrade pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
