@@ -12,6 +12,15 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 #        -t claude-workspace:latest \
 #        $SCRIPT_DIR
 
+# Preserve the current image as a rollback target before rebuilding.
+# A failed build leaves :latest untouched, but a build that succeeds yet won't
+# launch would orphan the old image — tagging it :previous keeps it reachable.
+# Roll back with: docker tag claude-workspace:previous claude-workspace:latest
+if docker image inspect claude-workspace:latest >/dev/null 2>&1; then
+    docker tag claude-workspace:latest claude-workspace:previous
+    echo "Saved current image as claude-workspace:previous (rollback target)"
+fi
+
 docker build \
        -t claude-workspace:latest \
-       $SCRIPT_DIR
+       "$SCRIPT_DIR"
