@@ -44,7 +44,7 @@ COPY claude-cborg /opt/local/bin
 
 WORKDIR /workspace
 
-# Entrypoint copies settings, and only copies claude.json if it doesn't already exist from a bind mount
-ENTRYPOINT ["/bin/bash", "-c", "mkdir -p /root/.claude && cp -a /opt/config/claude/. /root/.claude/ && if [ ! -s /root/.claude.json ]; then cp /opt/config/claude.json /root/.claude.json; fi && exec \"$@\"", "--"]
+# Entrypoint copies settings into /root/.claude, then execs the command
+ENTRYPOINT ["/bin/bash", "-c", "mkdir -p /root/.claude && cp -a /opt/config/claude/. /root/.claude/ && exec \"$@\"", "--"]
 
 CMD ["/bin/bash"]
