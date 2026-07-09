@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # claude-code
 # We use --ignore-scripts for security, then manually trigger the official Anthropic binary download
-ARG CLAUDE_CODE_VERSION=2.1.179
+ARG CLAUDE_CODE_VERSION=2.1.201
 RUN npm install -g --ignore-scripts @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} && \
     cd $(npm root -g)/@anthropic-ai/claude-code && \
     node install.cjs
@@ -28,7 +28,7 @@ RUN npm install -g --ignore-scripts @anthropic-ai/claude-code@${CLAUDE_CODE_VERS
 # superpowers
 # ARG SUPERPOWERS_VERSION=v5.1.0
 # ARG SUPERPOWERS_REPO=https://github.com/obra/superpowers.git
-ARG SUPERPOWERS_VERSION=v6.0.2
+ARG SUPERPOWERS_VERSION=v6.0.3
 ARG SUPERPOWERS_REPO=https://github.com/pcvelz/superpowers.git
 RUN mkdir -p /opt/config/claude/plugins \
              /opt/config/claude/skills && \

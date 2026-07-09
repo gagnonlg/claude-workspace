@@ -23,9 +23,12 @@ exec docker run -it --rm \
   -v "$(pwd):/workspace" \
   -e CBORG_API_KEY="${CBORG_API_KEY:-}" \
   -e CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 \
-  -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
   -e DISABLE_AUTOUPDATER=1 \
-  -e DISABLE_TELEMETRY=1 \
   -e DISABLE_UPDATES=1 \
   $CONTAINER \
   ${@-claude}
+
+
+# turned-off for remote control...
+  # -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
+  # -e DISABLE_TELEMETRY=1 \
