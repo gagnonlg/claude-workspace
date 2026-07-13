@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # claude-code
 # We use --ignore-scripts for security, then manually trigger the official Anthropic binary download
-ARG CLAUDE_CODE_VERSION=2.1.201
+ARG CLAUDE_CODE_VERSION=2.1.207
 RUN npm install -g --ignore-scripts @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} && \
     cd $(npm root -g)/@anthropic-ai/claude-code && \
     node install.cjs
