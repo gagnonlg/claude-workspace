@@ -36,6 +36,9 @@ RUN mkdir -p /opt/config/claude/plugins \
     git -C /opt/superpowers checkout $SUPERPOWERS_VERSION && \
     cp -r /opt/superpowers/skills/* /opt/config/claude/skills/
 
+# Custom repo-local skills
+COPY skills/ /opt/config/claude/skills/
+
 # claude config
 COPY settings.json /opt/config/claude/settings.json
 
