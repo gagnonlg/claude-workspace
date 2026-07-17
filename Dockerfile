@@ -4,7 +4,8 @@ FROM python:3.11-slim
 ENV WORKSPACE=/workspace \
     XDG_CONFIG_HOME=/root/.config \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/workspace/venv/bin:/opt/local/bin:$PATH"
+    PATH="/workspace/venv/bin:/opt/local/bin:$PATH" \
+    TZ=America/Los_Angeles
 
 # Base dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -14,6 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     npm \
     build-essential \
     emacs-nox \
+    tzdata \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     && pip install --no-cache-dir --upgrade pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
