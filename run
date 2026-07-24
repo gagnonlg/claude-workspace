@@ -13,6 +13,6 @@ else
     SESSION="${BASE}-${i}"
 fi
 
-tmux new-session -d -s $SESSION $SCRIPT_DIR/run
+tmux new-session -d -s $SESSION $SCRIPT_DIR/launch_container
 tmux source-file $SCRIPT_DIR/tmux.conf
 tmux attach -t $SESSION
