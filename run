@@ -1,0 +1,18 @@
+#!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Unique session ID
+BASE="claude-workspace"
+if ! tmux has-session -t "=${BASE}" 2>/dev/null; then
+    SESSION=$BASE
+else
+    i=1
+    while tmux has-session -t "=${BASE}-${i}" 2>/dev/null; do
+	((i++))
+    done
+    SESSION="${BASE}-${i}"
+fi
+
+tmux new-session -d -s $SESSION $SCRIPT_DIR/run
+tmux source-file $SCRIPT_DIR/tmux.conf
+tmux attach -t $SESSION
