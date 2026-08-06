@@ -1,0 +1,13 @@
+name: base
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - root=6.40.02
+  - nodejs=24.19.0
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - ipython
+  - jupyterlab

@@ -10,6 +10,7 @@ Dockerized Claude Code sandbox with a security-first design.
 - **Pinned claude-code version** — the image locks `@anthropic-ai/claude-code` to an explicit version (`CLAUDE_CODE_VERSION` build arg in the Dockerfile).
 - **Image as source of truth** — settings, skills, and plugins are baked into the image at build time. To change configuration, edit the source files and rebuild.
 - **Persistent `.claude_home`** — host-mounted at `/root` inside the container. Holds the live Pro OAuth credential and session state. Gitignored — never committed.
+- **conda-forge environment** — Python and [ROOT](https://root.cern) (CERN's data-analysis framework) come from conda-forge, pinned in `environment.yml`. The base image is `condaforge/miniforge3` (pinned tag), which is multi-arch, so the image builds and runs natively on both Apple Silicon and x86 — no emulation, no `--platform` pin. `/workspace/venv` is gone; the conda `base` env is now the environment (delete any old venv left over from a previous build). To add or bump a package, edit `environment.yml` and rebuild — the read-only rootfs means a runtime `conda install` won't persist, consistent with "image as source of truth" above.
 
 ## Usage
 
