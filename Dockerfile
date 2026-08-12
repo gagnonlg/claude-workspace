@@ -18,10 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Default git identity (repo owner)
-RUN git config --global user.name "Louis-Guillaume Gagnon" && \
-    git config --global user.email "gagnonlg@stanford.edu"
-
 # conda environment: Python, ROOT (CERN), and the scientific stack
 COPY environment.yml /tmp/environment.yml
 RUN conda env update -n base -f /tmp/environment.yml && \
