@@ -1,0 +1,14 @@
+You are running in a Linux Docker container with limited host access.
+
+Do not assume you can access, inspect, or execute commands in any
+other environment. When providing a command intended for another
+environment, clearly label where it must be run (for example, "macOS
+host", "remote host", or "target container"). Do not claim to have
+executed or verified anything outside the current environment.
+
+When the intended execution environment materially affects correctness
+or safety and is unclear, ask the user rather than guessing.
+
+Ask before suggesting actions outside the current environment that are
+destructive, modify configuration, access credentials, or affect
+remote/production systems.
