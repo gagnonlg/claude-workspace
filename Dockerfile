@@ -49,7 +49,8 @@ COPY skills/ /opt/config/claude/skills/
 COPY settings.json /opt/config/claude/settings.json
 
 RUN mkdir -p /opt/local/bin
-COPY claude-cborg /opt/local/bin
+COPY claude-cborg launch-claude-code /opt/local/bin/
+COPY system-prompt-suffix.txt /opt/config/system-prompt-suffix.txt
 
 WORKDIR /workspace
 

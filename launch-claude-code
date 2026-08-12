@@ -1,0 +1,19 @@
+#!/bin/bash
+set -u
+set -e
+
+# Baked into the image by the Dockerfile; override for local iteration without a rebuild,
+# e.g. CLAUDE_SYSTEM_PROMPT_SUFFIX=/workspace/system-prompt-suffix.txt
+SUFFIX_FILE="${CLAUDE_SYSTEM_PROMPT_SUFFIX:-/opt/config/system-prompt-suffix.txt}"
+
+if [ ! -r "$SUFFIX_FILE" ]; then
+    echo "launch-claude-code: cannot read system prompt suffix: $SUFFIX_FILE" >&2
+    exit 1
+fi
+
+# claude-code behavior (moved here from launch_container's docker -e flags)
+export CLAUDE_CODE_DISABLE_AUTO_MEMORY=1
+export DISABLE_AUTOUPDATER=1
+export DISABLE_UPDATES=1
+
+exec claude --append-system-prompt "$(cat "$SUFFIX_FILE")" "$@"
