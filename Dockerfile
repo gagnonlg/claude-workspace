@@ -37,7 +37,7 @@ RUN mkdir -p /opt/config/claude/plugins \
 
 # claude-code
 # We use --ignore-scripts for security, then manually trigger the official Anthropic binary download
-ARG CLAUDE_CODE_VERSION=2.1.228
+ARG CLAUDE_CODE_VERSION=2.1.234
 RUN npm install -g --ignore-scripts @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} && \
     cd $(npm root -g)/@anthropic-ai/claude-code && \
     node install.cjs
