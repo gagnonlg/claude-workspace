@@ -25,10 +25,10 @@ RUN conda env update -n base -f /tmp/environment.yml && \
     rm /tmp/environment.yml
 
 # superpowers
-# ARG SUPERPOWERS_VERSION=v5.1.0
-# ARG SUPERPOWERS_REPO=https://github.com/obra/superpowers.git
-ARG SUPERPOWERS_VERSION=v6.0.3
-ARG SUPERPOWERS_REPO=https://github.com/pcvelz/superpowers.git
+ARG SUPERPOWERS_VERSION=v6.4.1
+ARG SUPERPOWERS_REPO=https://github.com/obra/superpowers.git
+# ARG SUPERPOWERS_VERSION=v6.0.3
+# ARG SUPERPOWERS_REPO=https://github.com/pcvelz/superpowers.git
 RUN mkdir -p /opt/config/claude/plugins \
              /opt/config/claude/skills && \
     git clone $SUPERPOWERS_REPO /opt/superpowers && \
