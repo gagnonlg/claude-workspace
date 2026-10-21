@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""Claude Code SessionStart hook: record the current session id for the logbook MCP server.
+
+Fires on startup, --resume, /clear and compaction. Prints nothing (SessionStart
+stdout would be added to Claude's context).
+"""
+
+import json
+import os
+import re
+import sys
+import tempfile
+
+SESSION_FILE = os.environ.get("LOGBOOK_SESSION_FILE", "/tmp/claude-logbook/session")
+
+try:
+    session = json.load(sys.stdin).get("session_id", "")
+except (ValueError, AttributeError):
+    sys.exit(0)
+
+if isinstance(session, str) and re.fullmatch(r"[A-Za-z0-9_-]{1,128}", session):
+    directory = os.path.dirname(SESSION_FILE)
+    os.makedirs(directory, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=directory)
+    with os.fdopen(fd, "w") as f:
+        f.write(session + "\n")
+    os.replace(tmp, SESSION_FILE)

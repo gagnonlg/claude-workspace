@@ -1,3 +1,7 @@
 # Persistent Claude Code home (holds credentials, sessions, config) — never commit
 .claude_home/
 .claude
+
+# Logbook bridge shared secret and log (host side)
+.logbook_token
+.logbook_bridge.log

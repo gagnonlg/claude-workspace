@@ -52,6 +52,11 @@ RUN mkdir -p /opt/local/bin
 COPY claude-cborg launch-claude-code /opt/local/bin/
 COPY system-prompt-suffix.txt /opt/config/system-prompt-suffix.txt
 
+# Logbook MCP server (talks to the host-side logbook-bridge; see README)
+COPY logbook/logbook_mcp.py /opt/local/lib/logbook/
+COPY logbook/logbook-session-hook /opt/local/bin/
+COPY logbook/mcp.json /opt/config/mcp.json
+
 WORKDIR /workspace
 
 # Entrypoint copies settings into /root/.claude, activates the conda base env, then execs the command

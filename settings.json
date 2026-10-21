@@ -1,4 +1,22 @@
 {
     "hasCompletedOnboarding": true,
-    "theme": "dark"
+    "theme": "dark",
+    "permissions": {
+        "allow": [
+            "mcp__logbook__create_entry",
+            "mcp__logbook__append_entry"
+        ]
+    },
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/opt/local/bin/logbook-session-hook"
+                    }
+                ]
+            }
+        ]
+    }
 }

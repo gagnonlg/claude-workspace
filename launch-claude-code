@@ -16,4 +16,4 @@ export CLAUDE_CODE_DISABLE_AUTO_MEMORY=1
 export DISABLE_AUTOUPDATER=1
 export DISABLE_UPDATES=1
 
-exec claude --append-system-prompt "$(cat "$SUFFIX_FILE")" "$@"
+exec claude --mcp-config /opt/config/mcp.json --append-system-prompt "$(cat "$SUFFIX_FILE")" "$@"

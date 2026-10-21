@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""Host-side relay between the container's logbook MCP server and Emacs.
+
+Runs on the host (not in the container). Accepts authenticated JSON requests
+over HTTP, writes each one to a private spool file, and has Emacs process it
+with the constant expression `(claude-logbook-dispatch)` from
+claude-logbook.el. Request data never becomes part of the evaluated elisp.
+
+Endpoints:
+  GET  /health                          -> {"ok": true}
+  POST /create {"title"}                -> {"ok": true, "id": ...}
+  POST /append {"id", "title", "text"}  -> {"ok": true, "id": ...}
+
+Python stdlib only; written for the python3 that ships with macOS.
+"""
+
+import argparse
+import hmac
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+# The only expression ever passed to emacsclient. Never interpolate into it.
+EVAL_ARGS = ("--eval", "(claude-logbook-dispatch)")
+
+ID_RE = re.compile(r"\A[A-Za-z0-9:._-]{1,128}\Z")
+MAX_BODY = 1 << 20
+MAX_TITLE = 500
+MAX_TEXT = 200000
+EMACS_TIMEOUT = 30
+
+
+class RequestError(Exception):
+    def __init__(self, status, message):
+        super().__init__(message)
+        self.status = status
+
+
+class Bridge:
+    def __init__(self, emacsclient, spool_dir, token_file):
+        self.emacsclient = emacsclient
+        self.spool_dir = spool_dir
+        self.spool_file = os.path.join(spool_dir, "request.json")
+        self.token_file = token_file
+        self.lock = threading.Lock()
+
+    def token(self):
+        # Re-read on every request so a regenerated token needs no restart.
+        with open(self.token_file) as f:
+            return f.read().strip()
+
+    def authorized(self, header):
+        token = self.token()
+        if not token or not header or not header.startswith("Bearer "):
+            return False
+        return hmac.compare_digest(header[len("Bearer "):].encode(), token.encode())
+
+    def run(self, request):
+        """Spool REQUEST and have Emacs process it. Return the entry id."""
+        with self.lock:
+            os.makedirs(self.spool_dir, mode=0o700, exist_ok=True)
+            os.chmod(self.spool_dir, 0o700)
+            fd, tmp = tempfile.mkstemp(dir=self.spool_dir, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump(request, f, ensure_ascii=False)
+                os.replace(tmp, self.spool_file)
+            except BaseException:
+                os.unlink(tmp)
+                raise
+            try:
+                proc = subprocess.run(
+                    [self.emacsclient, *EVAL_ARGS],
+                    capture_output=True, text=True, timeout=EMACS_TIMEOUT,
+                )
+            except FileNotFoundError:
+                raise RequestError(502, "emacsclient not found: %s" % self.emacsclient)
+            except subprocess.TimeoutExpired:
+                raise RequestError(504, "Emacs did not answer within %ds" % EMACS_TIMEOUT)
+            finally:
+                if os.path.exists(self.spool_file):
+                    os.unlink(self.spool_file)
+        return parse_result(proc)
+
+
+def parse_result(proc):
+    out, err = proc.stdout.strip(), proc.stderr.strip()
+    if proc.returncode != 0 or "*ERROR*" in out or "*ERROR*" in err:
+        message = (err or out or "emacsclient exited with %d" % proc.returncode)[:500]
+        if "claude-logbook-dispatch" in message and "void-function" in message:
+            message = "claude-logbook.el is not loaded in Emacs"
+        raise RequestError(502, message)
+    value = out[1:-1] if len(out) >= 2 and out[0] == out[-1] == '"' else out
+    if not ID_RE.match(value):
+        raise RequestError(502, "unexpected reply from Emacs: %r" % out[:200])
+    return value
+
+
+def string_field(body, key, limit):
+    value = body.get(key)
+    if not isinstance(value, str):
+        raise RequestError(400, "field %r must be a string" % key)
+    if len(value) > limit:
+        raise RequestError(400, "field %r is too long" % key)
+    return value
+
+
+def build_request(path, body):
+    if not isinstance(body, dict):
+        raise RequestError(400, "request body must be a JSON object")
+    if path == "/create":
+        title = string_field(body, "title", MAX_TITLE)
+        if not title.strip():
+            raise RequestError(400, "title must not be empty")
+        return {"op": "create", "title": title}
+    if path == "/append":
+        entry_id = string_field(body, "id", 128)
+        if not ID_RE.match(entry_id):
+            raise RequestError(400, "malformed id")
+        return {"op": "append", "id": entry_id,
+                "title": string_field(body, "title", MAX_TITLE),
+                "text": string_field(body, "text", MAX_TEXT)}
+    raise RequestError(404, "unknown endpoint")
+
+
+def make_handler(bridge):
+    class Handler(BaseHTTPRequestHandler):
+        server_version = "claude-logbook-bridge"
+
+        def reply(self, status, payload):
+            data = json.dumps(payload).encode()
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_GET(self):
+            if self.path == "/health":
+                self.reply(200, {"ok": True})
+            else:
+                self.reply(404, {"ok": False, "error": "unknown endpoint"})
+
+        def do_POST(self):
+            try:
+                if not bridge.authorized(self.headers.get("Authorization")):
+                    raise RequestError(401, "bad or missing token")
+                length = int(self.headers.get("Content-Length") or 0)
+                if length <= 0 or length > MAX_BODY:
+                    raise RequestError(413 if length > MAX_BODY else 400, "bad request size")
+                try:
+                    body = json.loads(self.rfile.read(length).decode("utf-8"))
+                except ValueError:
+                    raise RequestError(400, "body is not valid JSON")
+                entry_id = bridge.run(build_request(self.path, body))
+                self.reply(200, {"ok": True, "id": entry_id})
+            except RequestError as e:
+                self.reply(e.status, {"ok": False, "error": str(e)})
+
+        def log_message(self, fmt, *args):
+            sys.stderr.write("%s - %s\n" % (self.log_date_time_string(), fmt % args))
+
+    return Handler
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--bind", default="127.0.0.1",
+                        help="address to listen on (default 127.0.0.1; on Linux hosts "
+                             "use the docker0 address, e.g. 172.17.0.1)")
+    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--token-file", required=True)
+    parser.add_argument("--emacsclient", default="emacsclient")
+    parser.add_argument("--spool-dir",
+                        default=os.path.expanduser("~/.cache/claude-logbook"),
+                        help="must match claude-logbook-spool-file in Emacs")
+    args = parser.parse_args(argv)
+
+    bridge = Bridge(args.emacsclient, args.spool_dir, args.token_file)
+    bridge.token()  # fail fast if the token file is unreadable
+    server = ThreadingHTTPServer((args.bind, args.port), make_handler(bridge))
+    sys.stderr.write("logbook-bridge listening on %s:%d\n" % (args.bind, args.port))
+    server.serve_forever()
+
+
+if __name__ == "__main__":
+    main()

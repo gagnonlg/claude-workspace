@@ -1,6 +1,22 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+# Logbook bridge (host side): shared token + background relay to Emacs
+LOGBOOK_PORT="${LOGBOOK_PORT:-8765}"
+LOGBOOK_TOKEN_FILE="$SCRIPT_DIR/.logbook_token"
+if command -v python3 >/dev/null 2>&1; then
+    if [ ! -s "$LOGBOOK_TOKEN_FILE" ]; then
+	(umask 077 && python3 -c 'import secrets; print(secrets.token_hex(32))' > "$LOGBOOK_TOKEN_FILE")
+    fi
+    if ! curl -fsS "http://127.0.0.1:${LOGBOOK_PORT}/health" >/dev/null 2>&1; then
+	nohup python3 "$SCRIPT_DIR/logbook/logbook-bridge" \
+	      --port "$LOGBOOK_PORT" --token-file "$LOGBOOK_TOKEN_FILE" \
+	      >> "$SCRIPT_DIR/.logbook_bridge.log" 2>&1 &
+    fi
+else
+    echo "run: python3 not found; logbook bridge not started" >&2
+fi
+
 # Unique session ID
 BASE="claude-workspace"
 if ! tmux has-session -t "=${BASE}" 2>/dev/null; then

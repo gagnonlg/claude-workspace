@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+        "logbook": {
+            "command": "/opt/conda/bin/python",
+            "args": ["/opt/local/lib/logbook/logbook_mcp.py"]
+        }
+    }
+}
