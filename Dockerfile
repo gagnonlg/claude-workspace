@@ -42,6 +42,12 @@ RUN npm install -g --ignore-scripts @anthropic-ai/claude-code@${CLAUDE_CODE_VERS
     cd $(npm root -g)/@anthropic-ai/claude-code && \
     node install.cjs
 
+# opencode
+ARG OPENCODE_VERSION=1.19.5
+RUN npm install -g --ignore-scripts opencode-ai@${OPENCODE_VERSION} && \
+    cd $(npm root -g)/opencode-ai && \
+    node postinstall.mjs
+
 # Custom repo-local skills
 COPY skills/ /opt/config/claude/skills/
 
