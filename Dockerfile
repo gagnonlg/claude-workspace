@@ -29,11 +29,11 @@ ARG SUPERPOWERS_VERSION=v7.0.0
 ARG SUPERPOWERS_REPO=https://github.com/obra/superpowers.git
 # ARG SUPERPOWERS_VERSION=v6.0.3
 # ARG SUPERPOWERS_REPO=https://github.com/pcvelz/superpowers.git
-RUN mkdir -p /opt/config/claude/plugins \
-             /opt/config/claude/skills && \
-    git clone $SUPERPOWERS_REPO /opt/superpowers && \
-    git -C /opt/superpowers checkout $SUPERPOWERS_VERSION && \
-    cp -r /opt/superpowers/skills/* /opt/config/claude/skills/
+# RUN mkdir -p /opt/config/claude/plugins \
+#              /opt/config/claude/skills && \
+#     git clone $SUPERPOWERS_REPO /opt/superpowers && \
+#     git -C /opt/superpowers checkout $SUPERPOWERS_VERSION && \
+#     cp -r /opt/superpowers/skills/* /opt/config/claude/skills/
 
 # claude-code
 # We use --ignore-scripts for security, then manually trigger the official Anthropic binary download
