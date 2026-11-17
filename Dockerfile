@@ -37,7 +37,7 @@ ARG SUPERPOWERS_REPO=https://github.com/obra/superpowers.git
 
 # claude-code
 # We use --ignore-scripts for security, then manually trigger the official Anthropic binary download
-ARG CLAUDE_CODE_VERSION=2.1.319
+ARG CLAUDE_CODE_VERSION=2.1.326
 RUN npm install -g --ignore-scripts @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} && \
     cd $(npm root -g)/@anthropic-ai/claude-code && \
     node install.cjs
