@@ -25,8 +25,8 @@ RUN conda env update -n base -f /tmp/environment.yml && \
     rm /tmp/environment.yml
 
 # superpowers
-ARG SUPERPOWERS_VERSION=v7.0.0
-ARG SUPERPOWERS_REPO=https://github.com/obra/superpowers.git
+# ARG SUPERPOWERS_VERSION=v7.0.0
+# ARG SUPERPOWERS_REPO=https://github.com/obra/superpowers.git
 # ARG SUPERPOWERS_VERSION=v6.0.3
 # ARG SUPERPOWERS_REPO=https://github.com/pcvelz/superpowers.git
 # RUN mkdir -p /opt/config/claude/plugins \
@@ -65,7 +65,9 @@ COPY logbook/mcp.json /opt/config/mcp.json
 
 WORKDIR /workspace
 
-# Entrypoint copies settings into /root/.claude, activates the conda base env, then execs the command
-ENTRYPOINT ["/bin/bash", "-c", "mkdir -p /root/.claude && cp -a /opt/config/claude/. /root/.claude/ && . /opt/conda/etc/profile.d/conda.sh && conda activate base && exec \"$@\"", "--"]
+# Entrypoint syncs config into /root/.claude (asking before removing stale
+# skills), activates the conda base env, then execs the command
+COPY entrypoint.sh /opt/local/bin/entrypoint.sh
+ENTRYPOINT ["/opt/local/bin/entrypoint.sh"]
 
 CMD ["/bin/bash"]
